@@ -38,24 +38,23 @@ UPDATE restaurants
 SET district_no = 1
 WHERE district_no IS NULL;
 
--- 2. Liệt kê các đơn hàng cũ sẽ bị gán quận giao mặc định (Quận 1):
+-- 2. Liệt kê các đơn hàng cũ (sẽ giữ nguyên NULL theo Phương án B - bảo toàn dữ liệu lịch sử):
 SELECT order_id, customer_id, restaurant_id, delivery_address, total_amount
 FROM orders
 WHERE delivery_district_no IS NULL;
 
--- Gán mặc định Quận 1 cho các đơn hàng cũ:
-UPDATE orders
-SET delivery_district_no = 1
-WHERE delivery_district_no IS NULL;
+-- (Phương án B: KHÔNG gán mặc định Quận 1 cho đơn cũ để không làm sai lệch báo cáo/lịch sử)
 
--- 3. Áp đặt NOT NULL và ràng buộc CHECK (district_no từ 1 đến 10) sau khi dữ liệu đã sạch:
+-- 3. Áp đặt ràng buộc:
+-- - restaurants: Bắt buộc NOT NULL và BETWEEN 1 AND 10
 ALTER TABLE restaurants
     MODIFY COLUMN district_no TINYINT NOT NULL,
     ADD CONSTRAINT chk_restaurants_district CHECK (district_no BETWEEN 1 AND 10);
 
+-- - orders: Cho phép NULL cho đơn cũ; nếu có giá trị (đơn mới) thì phải BETWEEN 1 AND 10
 ALTER TABLE orders
-    MODIFY COLUMN delivery_district_no TINYINT NOT NULL,
-    ADD CONSTRAINT chk_orders_delivery_district CHECK (delivery_district_no BETWEEN 1 AND 10);
+    MODIFY COLUMN delivery_district_no TINYINT NULL,
+    ADD CONSTRAINT chk_orders_delivery_district CHECK (delivery_district_no IS NULL OR (delivery_district_no BETWEEN 1 AND 10));
 
 
 -- -----------------------------------------------------------------------------

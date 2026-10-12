@@ -102,14 +102,14 @@ CREATE TABLE IF NOT EXISTS orders (
     total_amount        DECIMAL(12,2)   NOT NULL,
     order_status        VARCHAR(30)     NOT NULL DEFAULT 'PENDING',
     delivery_address    VARCHAR(255)    NOT NULL,
-    delivery_district_no TINYINT        NOT NULL,
+    delivery_district_no TINYINT        NULL,
     created_at          DATETIME(6)     NOT NULL,
     CONSTRAINT pk_orders PRIMARY KEY (order_id),
     CONSTRAINT chk_orders_status CHECK (order_status IN (
         'PENDING','CONFIRMED','PREPARING','READY_FOR_PICKUP',
         'DELIVERING','COMPLETED','CANCELLED'
     )),
-    CONSTRAINT chk_orders_delivery_district CHECK (delivery_district_no BETWEEN 1 AND 10),
+    CONSTRAINT chk_orders_delivery_district CHECK (delivery_district_no IS NULL OR (delivery_district_no BETWEEN 1 AND 10)),
     CONSTRAINT fk_orders_customer
         FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     CONSTRAINT fk_orders_restaurant

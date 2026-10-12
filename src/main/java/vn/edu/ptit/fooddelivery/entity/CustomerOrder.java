@@ -58,9 +58,8 @@ public class CustomerOrder {
     @Column(name = "delivery_address", nullable = false, length = 255)
     private String deliveryAddress;
 
-    @Column(name = "delivery_district_no", nullable = false)
-    @Builder.Default
-    private Integer deliveryDistrictNo = 1;
+    @Column(name = "delivery_district_no")
+    private Integer deliveryDistrictNo;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

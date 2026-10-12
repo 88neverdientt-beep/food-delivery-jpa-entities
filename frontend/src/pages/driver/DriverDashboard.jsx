@@ -314,14 +314,18 @@ export const DriverDashboard = () => {
                         <Store className="w-3.5 h-3.5 text-orange-500" />
                         Nhà hàng:
                       </span>
-                      <span className="font-bold text-slate-800">Quận {order.restaurantDistrictNo}</span>
+                      <span className="font-bold text-slate-800">
+                        {order.restaurantDistrictNo ? `Quận ${order.restaurantDistrictNo}` : 'Chưa phân quận'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-blue-500" />
                         Giao đến:
                       </span>
-                      <span className="font-bold text-slate-800">Quận {order.deliveryDistrictNo}</span>
+                      <span className="font-bold text-slate-800">
+                        {order.deliveryDistrictNo ? `Quận ${order.deliveryDistrictNo}` : 'Chưa phân quận'}
+                      </span>
                     </div>
                     <div className="flex items-start gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-slate-600 flex-shrink-0 mt-0.5" />
