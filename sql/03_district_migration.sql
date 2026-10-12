@@ -59,11 +59,7 @@ ALTER TABLE orders
 
 
 -- -----------------------------------------------------------------------------
--- BƯỚC (c): Xóa các cột cũ không còn sử dụng
--- LƯU Ý: Bước này CHỈ CHẠY SAU CÙNG khi mã nguồn backend & frontend mới đã được deploy
---        và hoạt động ổn định hoàn toàn!
+-- BƯỚC (c): Xóa cột cũ → ĐÃ TÁCH SANG FILE RIÊNG
+-- Xem: sql/06_drop_legacy_gps_columns.sql
+-- Chạy file đó SAU CÙNG, sau khi đã rà soát dữ liệu và deploy thành công.
 -- -----------------------------------------------------------------------------
--- ALTER TABLE orders
---     DROP COLUMN distance_km,
---     DROP COLUMN delivery_latitude,
---     DROP COLUMN delivery_longitude;
