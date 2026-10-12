@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/food_delivery?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# ---------------------------------------------------------------------------
+# Tham số phí ship (mục 5.2)
+# base_fee   : phí cơ bản (VND) – áp dụng cho mọi đơn
+# per_km_fee : phí thêm mỗi km vượt base_km
+# base_km    : số km miễn phí đầu tiên (vd 2 km đầu tính base_fee)
+# max_fee    : phí ship tối đa (VND), tránh trường hợp quá xa
+# ---------------------------------------------------------------------------
+app:
+  shipping:
+    base-fee: 15000
+    per-km-fee: 5000
+    base-km: 2.0
+    max-fee: 50000
+
+server:
+  port: 8080
