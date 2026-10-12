@@ -42,10 +42,6 @@ public class CustomerOrder {
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
-    /** Dẫn xuất từ tọa độ nhà hàng và điểm giao; lưu lại để chốt phí ship. */
-    @Column(name = "distance_km", nullable = false)
-    private Double distanceKm;
-
     @Column(name = "shipping_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal shippingFee;
 
@@ -62,10 +58,13 @@ public class CustomerOrder {
     @Column(name = "delivery_address", nullable = false, length = 255)
     private String deliveryAddress;
 
-    @Column(name = "delivery_latitude", nullable = false)
-    private Double deliveryLatitude;
+    @Column(name = "delivery_district_no", nullable = false)
+    @Builder.Default
+    private Integer deliveryDistrictNo = 1;
 
-    @Column(name = "delivery_longitude", nullable = false)
+    // Temporary during entity migration; will be removed in step 6
+    private Double distanceKm;
+    private Double deliveryLatitude;
     private Double deliveryLongitude;
 
     @CreationTimestamp

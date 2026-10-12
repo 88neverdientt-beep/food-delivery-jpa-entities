@@ -30,12 +30,14 @@ CREATE TABLE IF NOT EXISTS restaurants (
     password_hash   VARCHAR(255)    NOT NULL,
     phone_number    VARCHAR(20)     NOT NULL,
     address         VARCHAR(255)    NOT NULL,
-    latitude        DOUBLE          NOT NULL,
-    longitude       DOUBLE          NOT NULL,
+    district_no     TINYINT         NOT NULL,
+    latitude        DOUBLE          NULL,
+    longitude       DOUBLE          NULL,
     is_active       TINYINT(1)      NOT NULL DEFAULT 1,
     created_at      DATETIME(6)     NOT NULL,
     CONSTRAINT pk_restaurants PRIMARY KEY (restaurant_id),
-    CONSTRAINT uk_restaurants_email UNIQUE (email)
+    CONSTRAINT uk_restaurants_email UNIQUE (email),
+    CONSTRAINT chk_restaurants_district CHECK (district_no BETWEEN 1 AND 10)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------------------------------
@@ -96,19 +98,18 @@ CREATE TABLE IF NOT EXISTS orders (
     order_id            BIGINT          NOT NULL AUTO_INCREMENT,
     customer_id         BIGINT          NOT NULL,
     restaurant_id       BIGINT          NOT NULL,
-    distance_km         DOUBLE          NOT NULL,
     shipping_fee        DECIMAL(12,2)   NOT NULL,
     total_amount        DECIMAL(12,2)   NOT NULL,
     order_status        VARCHAR(30)     NOT NULL DEFAULT 'PENDING',
     delivery_address    VARCHAR(255)    NOT NULL,
-    delivery_latitude   DOUBLE          NOT NULL,
-    delivery_longitude  DOUBLE          NOT NULL,
+    delivery_district_no TINYINT        NOT NULL,
     created_at          DATETIME(6)     NOT NULL,
     CONSTRAINT pk_orders PRIMARY KEY (order_id),
     CONSTRAINT chk_orders_status CHECK (order_status IN (
         'PENDING','CONFIRMED','PREPARING','READY_FOR_PICKUP',
         'DELIVERING','COMPLETED','CANCELLED'
     )),
+    CONSTRAINT chk_orders_delivery_district CHECK (delivery_district_no BETWEEN 1 AND 10),
     CONSTRAINT fk_orders_customer
         FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     CONSTRAINT fk_orders_restaurant

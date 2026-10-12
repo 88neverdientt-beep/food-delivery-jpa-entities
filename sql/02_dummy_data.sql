@@ -17,28 +17,28 @@ INSERT INTO payment_methods (method_code, method_name) VALUES
 -- -----------------------------------------------------------------------------
 INSERT INTO restaurants
     (restaurant_name, email, password_hash, phone_number, address,
-     latitude, longitude, is_active, created_at)
+     district_no, latitude, longitude, is_active, created_at)
 VALUES
     ('Phở Hà Nội',
      'pho.hanoi@example.com',
      '$2a$10$dummyhash1',
      '0901111111',
      '12 Hàng Buồm, Hoàn Kiếm, Hà Nội',
-     21.0340, 105.8490, 1, NOW()),
+     1, 21.0340, 105.8490, 1, NOW()),
 
     ('Bún Bò Huế Ngon',
      'bunbo.hue@example.com',
      '$2a$10$dummyhash2',
      '0902222222',
      '88 Lê Lợi, Hải Châu, Đà Nẵng',
-     16.0678, 108.2208, 1, NOW()),
+     2, 16.0678, 108.2208, 1, NOW()),
 
     ('Pizza Saigon',
      'pizza.saigon@example.com',
      '$2a$10$dummyhash3',
      '0903333333',
      '45 Nguyễn Huệ, Quận 1, TP.HCM',
-     10.7769, 106.7009, 1, NOW());
+     3, 10.7769, 106.7009, 1, NOW());
 
 -- -----------------------------------------------------------------------------
 -- customers
@@ -126,40 +126,40 @@ INSERT INTO food_items (restaurant_id, item_name, category_name, price, is_avail
 -- -----------------------------------------------------------------------------
 -- orders  (1 đơn mẫu cho mỗi customer)
 -- -----------------------------------------------------------------------------
--- Đơn 1: Nguyễn Văn An → Phở Hà Nội
+-- Đơn 1: Nguyễn Văn An → Phở Hà Nội (Quận 1 -> Quận 1, gap 0 => fee 15000)
 INSERT INTO orders
-    (customer_id, restaurant_id, distance_km, shipping_fee, total_amount,
-     order_status, delivery_address, delivery_latitude, delivery_longitude, created_at)
+    (customer_id, restaurant_id, shipping_fee, total_amount,
+     order_status, delivery_address, delivery_district_no, created_at)
 VALUES
     (1, 1,
-     3.2, 20000.00, 135000.00,
+     15000.00, 185000.00,
      'COMPLETED',
      '5 Tràng Tiền, Hoàn Kiếm, Hà Nội',
-     21.0260, 105.8500,
+     1,
      NOW() - INTERVAL 2 DAY);
 
--- Đơn 2: Trần Thị Bình → Bún Bò Huế Ngon
+-- Đơn 2: Trần Thị Bình → Bún Bò Huế Ngon (Quận 2 -> Quận 3, gap 1 => fee 15000)
 INSERT INTO orders
-    (customer_id, restaurant_id, distance_km, shipping_fee, total_amount,
-     order_status, delivery_address, delivery_latitude, delivery_longitude, created_at)
+    (customer_id, restaurant_id, shipping_fee, total_amount,
+     order_status, delivery_address, delivery_district_no, created_at)
 VALUES
     (2, 2,
-     1.5, 15000.00, 95000.00,
+     15000.00, 95000.00,
      'DELIVERING',
      '20 Bạch Đằng, Hải Châu, Đà Nẵng',
-     16.0650, 108.2190,
+     3,
      NOW() - INTERVAL 1 HOUR);
 
--- Đơn 3: Lê Minh Châu → Pizza Saigon
+-- Đơn 3: Lê Minh Châu → Pizza Saigon (Quận 3 -> Quận 5, gap 2 => fee 30000)
 INSERT INTO orders
-    (customer_id, restaurant_id, distance_km, shipping_fee, total_amount,
-     order_status, delivery_address, delivery_latitude, delivery_longitude, created_at)
+    (customer_id, restaurant_id, shipping_fee, total_amount,
+     order_status, delivery_address, delivery_district_no, created_at)
 VALUES
     (3, 3,
-     5.0, 30000.00, 330000.00,
+     30000.00, 330000.00,
      'PENDING',
      '99 Lê Văn Sỹ, Quận 3, TP.HCM',
-     10.7740, 106.6880,
+     5,
      NOW());
 
 -- -----------------------------------------------------------------------------
