@@ -15,9 +15,4 @@ public record ShippingProperties(
         BigDecimal sameDistrictFee,
         /** Phí mỗi đơn vị chênh lệch quận (gap >= 1: gap * perGapFee). */
         BigDecimal perGapFee
-) {
-    public double baseFee() { return 15000.0; }
-    public double perKmFee() { return 5000.0; }
-    public double baseKm() { return 2.0; }
-    public double maxFee() { return 50000.0; }
-}
+) {}

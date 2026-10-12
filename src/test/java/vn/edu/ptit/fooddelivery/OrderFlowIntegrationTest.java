@@ -64,6 +64,7 @@ class OrderFlowIntegrationTest {
                 .passwordHash("hash")
                 .phoneNumber("0900000011")
                 .address("1 Test St, Hà Nội")
+                .districtNo(1)
                 .latitude(21.0285)
                 .longitude(105.8542)
                 .active(true)
@@ -109,7 +110,7 @@ class OrderFlowIntegrationTest {
                 customer.getCustomerId(),
                 restaurant.getRestaurantId(),
                 "15 Hàng Buồm, Hoàn Kiếm, Hà Nội",
-                21.0340, 105.8490,
+                1,
                 List.of(new OrderItemRequest(foodItem.getItemId(), 2))
         );
 
@@ -205,7 +206,7 @@ class OrderFlowIntegrationTest {
     void createOrder_restaurantNotFound_404() throws Exception {
         CreateOrderRequest req = new CreateOrderRequest(
                 customer.getCustomerId(), 9999L,
-                "addr", 21.0, 105.8,
+                "addr", 1,
                 List.of(new OrderItemRequest(foodItem.getItemId(), 1)));
 
         mockMvc.perform(post("/api/orders")
@@ -260,7 +261,7 @@ class OrderFlowIntegrationTest {
     void createOrder_emptyItems_400() throws Exception {
         CreateOrderRequest req = new CreateOrderRequest(
                 customer.getCustomerId(), restaurant.getRestaurantId(),
-                "addr", 21.0, 105.8,
+                "addr", 1,
                 List.of()); // rỗng → vi phạm @NotEmpty
 
         mockMvc.perform(post("/api/orders")
@@ -297,7 +298,7 @@ class OrderFlowIntegrationTest {
     private Long createOrder() throws Exception {
         CreateOrderRequest req = new CreateOrderRequest(
                 customer.getCustomerId(), restaurant.getRestaurantId(),
-                "Delivery Address", 21.0340, 105.8490,
+                "Delivery Address", 1,
                 List.of(new OrderItemRequest(foodItem.getItemId(), 1)));
 
         MvcResult result = mockMvc.perform(post("/api/orders")

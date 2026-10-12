@@ -52,11 +52,10 @@ class RatingServiceTest {
                 .customer(customer)
                 .restaurant(restaurant)
                 .orderStatus(OrderStatus.COMPLETED)
-                .distanceKm(2.0)
+                .deliveryDistrictNo(1)
                 .shippingFee(new BigDecimal("15000"))
                 .totalAmount(new BigDecimal("70000"))
                 .deliveryAddress("addr")
-                .deliveryLatitude(21.0).deliveryLongitude(105.8)
                 .build();
 
         foodItem = FoodItem.builder()

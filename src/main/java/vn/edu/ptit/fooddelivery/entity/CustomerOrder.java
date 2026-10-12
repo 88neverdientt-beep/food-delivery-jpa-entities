@@ -62,11 +62,6 @@ public class CustomerOrder {
     @Builder.Default
     private Integer deliveryDistrictNo = 1;
 
-    // Temporary during entity migration; will be removed in step 6
-    private Double distanceKm;
-    private Double deliveryLatitude;
-    private Double deliveryLongitude;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

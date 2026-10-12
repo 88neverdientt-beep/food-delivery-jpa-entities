@@ -17,10 +17,9 @@ import vn.edu.ptit.fooddelivery.repository.CustomerOrderRepository;
 import vn.edu.ptit.fooddelivery.repository.CustomerRepository;
 import vn.edu.ptit.fooddelivery.repository.FoodItemRepository;
 import vn.edu.ptit.fooddelivery.repository.RestaurantRepository;
-import vn.edu.ptit.fooddelivery.util.HaversineUtil;
+import vn.edu.ptit.fooddelivery.util.ShippingFeeCalculator;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class OrderService {
     private final RestaurantRepository     restaurantRepository;
     private final FoodItemRepository       foodItemRepository;
     private final CustomerOrderRepository  orderRepository;
-    private final ShippingProperties       shippingProperties;
+    private final ShippingFeeCalculator    shippingFeeCalculator;
 
     // ─── Queries ──────────────────────────────────────────────────────────────
 
@@ -47,11 +46,8 @@ public class OrderService {
         Restaurant restaurant = restaurantRepository.findById(req.restaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + req.restaurantId()));
 
-        double distanceKm = HaversineUtil.calculate(
-                restaurant.getLatitude(), restaurant.getLongitude(),
-                req.deliveryLatitude(), req.deliveryLongitude());
-
-        BigDecimal shippingFee = computeShippingFee(distanceKm);
+        int gap = shippingFeeCalculator.calculateGap(restaurant.getDistrictNo(), req.deliveryDistrictNo());
+        BigDecimal shippingFee = shippingFeeCalculator.calculateFee(restaurant.getDistrictNo(), req.deliveryDistrictNo());
 
         BigDecimal itemsTotal = req.items().stream()
                 .map(ir -> {
@@ -61,7 +57,14 @@ public class OrderService {
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new OrderPreviewResponse(distanceKm, shippingFee, itemsTotal, shippingFee.add(itemsTotal));
+        return new OrderPreviewResponse(
+                restaurant.getDistrictNo(),
+                req.deliveryDistrictNo(),
+                gap,
+                shippingFee,
+                itemsTotal,
+                shippingFee.add(itemsTotal)
+        );
     }
 
     // ─── Commands ─────────────────────────────────────────────────────────────
@@ -71,7 +74,7 @@ public class OrderService {
      * <ul>
      *   <li>Kiểm tra khách và nhà hàng tồn tại, nhà hàng active.</li>
      *   <li>Kiểm tra từng món: available=true và thuộc đúng nhà hàng.</li>
-     *   <li>Tính distance_km (Haversine), shipping_fee, subtotal, total_amount.</li>
+     *   <li>Tính shipping_fee theo quận (ShippingFeeCalculator), subtotal, total_amount.</li>
      *   <li>Lưu CustomerOrder kèm OrderItem qua CascadeType.ALL.</li>
      * </ul>
      */
@@ -89,21 +92,15 @@ public class OrderService {
             throw new BusinessException("Restaurant is not active: " + req.restaurantId());
         }
 
-        double distanceKm = HaversineUtil.calculate(
-                restaurant.getLatitude(), restaurant.getLongitude(),
-                req.deliveryLatitude(), req.deliveryLongitude());
-
-        BigDecimal shippingFee = computeShippingFee(distanceKm);
+        BigDecimal shippingFee = shippingFeeCalculator.calculateFee(restaurant.getDistrictNo(), req.deliveryDistrictNo());
 
         CustomerOrder order = CustomerOrder.builder()
                 .customer(customer)
                 .restaurant(restaurant)
-                .distanceKm(distanceKm)
+                .deliveryDistrictNo(req.deliveryDistrictNo())
                 .shippingFee(shippingFee)
                 .totalAmount(BigDecimal.ZERO)   // recalculated after adding items
                 .deliveryAddress(req.deliveryAddress())
-                .deliveryLatitude(req.deliveryLatitude())
-                .deliveryLongitude(req.deliveryLongitude())
                 .build();
 
         // Thêm từng món – validate và chốt giá
@@ -126,21 +123,6 @@ public class OrderService {
         order.recalculateTotalAmount();
 
         return OrderResponse.from(orderRepository.save(order));
-    }
-
-    // ─── Private helpers ──────────────────────────────────────────────────────
-
-    /**
-     * Tính phí ship theo công thức: base_fee + (distance - base_km) * per_km_fee,
-     * giới hạn không vượt max_fee. (Quy tắc nghiệp vụ 5.2)
-     */
-    BigDecimal computeShippingFee(double distanceKm) {
-        double fee = shippingProperties.baseFee();
-        if (distanceKm > shippingProperties.baseKm()) {
-            fee += (distanceKm - shippingProperties.baseKm()) * shippingProperties.perKmFee();
-        }
-        fee = Math.min(fee, shippingProperties.maxFee());
-        return BigDecimal.valueOf(fee).setScale(2, RoundingMode.HALF_UP);
     }
 
     CustomerOrder findOrderOrThrow(Long orderId) {
