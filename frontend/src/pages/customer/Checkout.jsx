@@ -14,8 +14,8 @@ export const Checkout = () => {
   const navigate = useNavigate();
 
   const [deliveryAddress, setDeliveryAddress] = useState('Km10 Nguyễn Trãi, Hà Đông, Hà Nội');
-  const [deliveryLatitude, setDeliveryLatitude] = useState(20.9806);
-  const [deliveryLongitude, setDeliveryLongitude] = useState(105.7876);
+  const [deliveryDistrictNo, setDeliveryDistrictNo] = useState(1);
+  const [districts, setDistricts] = useState([]);
   const [notes, setNotes] = useState('');
 
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -26,22 +26,29 @@ export const Checkout = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Tọa độ mẫu tiện lợi để test khoảng cách và phí ship
-  const locationPresets = [
-    { name: 'PTIT Hà Đông', lat: 20.9806, lng: 105.7876 },
-    { name: 'Cầu Giấy', lat: 21.0362, lng: 105.7905 },
-    { name: 'Hoàn Kiếm', lat: 21.0285, lng: 105.8542 },
-  ];
-
   useEffect(() => {
     fetchPaymentMethods();
+    fetchDistricts();
   }, []);
 
   useEffect(() => {
     if (cart.items.length > 0 && cart.restaurantId) {
       calculatePreview();
     }
-  }, [deliveryLatitude, deliveryLongitude, cart.items]);
+  }, [deliveryDistrictNo, cart.items, cart.restaurantId]);
+
+  const fetchDistricts = async () => {
+    try {
+      const data = await axiosClient.get('/districts');
+      if (Array.isArray(data) && data.length > 0) {
+        setDistricts(data);
+      } else {
+        setDistricts(Array.from({ length: 10 }, (_, i) => ({ districtNo: i + 1, districtName: `Quận ${i + 1}` })));
+      }
+    } catch (err) {
+      setDistricts(Array.from({ length: 10 }, (_, i) => ({ districtNo: i + 1, districtName: `Quận ${i + 1}` })));
+    }
+  };
 
   const fetchPaymentMethods = async () => {
     try {
@@ -62,8 +69,7 @@ export const Checkout = () => {
         restaurantId: cart.restaurantId,
         customerId: user?.id || 1,
         deliveryAddress: deliveryAddress || 'Địa chỉ giao hàng',
-        deliveryLatitude: Number(deliveryLatitude),
-        deliveryLongitude: Number(deliveryLongitude),
+        deliveryDistrictNo: Number(deliveryDistrictNo),
         notes: notes,
         items: cart.items.map((i) => ({ itemId: i.itemId, quantity: i.quantity })),
       };
@@ -92,8 +98,7 @@ export const Checkout = () => {
         restaurantId: cart.restaurantId,
         customerId: user.id,
         deliveryAddress,
-        deliveryLatitude: Number(deliveryLatitude),
-        deliveryLongitude: Number(deliveryLongitude),
+        deliveryDistrictNo: Number(deliveryDistrictNo),
         notes,
         items: cart.items.map((i) => ({ itemId: i.itemId, quantity: i.quantity })),
       };
@@ -182,55 +187,28 @@ export const Checkout = () => {
                 />
               </div>
 
-              {/* Tọa độ GPS & Presets */}
+              {/* Chọn Quận Giao Hàng */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Tọa độ GPS (Vĩ độ / Kinh độ để tính khoảng cách Haversine)
-                  </label>
-                  <span className="text-[11px] text-slate-600 font-medium">Chọn nhanh địa điểm:</span>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Quận giao hàng *
+                </label>
+                <div className="relative">
+                  <MapPin className="w-5 h-5 text-slate-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <select
+                    value={deliveryDistrictNo}
+                    onChange={(e) => setDeliveryDistrictNo(Number(e.target.value))}
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition"
+                  >
+                    {districts.map((d) => (
+                      <option key={d.districtNo} value={d.districtNo}>
+                        {d.districtName || `Quận ${d.districtNo}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {locationPresets.map((preset) => (
-                    <button
-                      key={preset.name}
-                      type="button"
-                      onClick={() => {
-                        setDeliveryLatitude(preset.lat);
-                        setDeliveryLongitude(preset.lng);
-                      }}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 border border-slate-200/60 transition flex items-center gap-1"
-                    >
-                      <Navigation className="w-3 h-3 text-orange-500" /> {preset.name}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[11px] text-slate-600 block mb-1">Vĩ độ (Latitude)</span>
-                    <input
-                      type="number"
-                      step="any"
-                      required
-                      value={deliveryLatitude}
-                      onChange={(e) => setDeliveryLatitude(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-orange-500"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[11px] text-slate-600 block mb-1">Kinh độ (Longitude)</span>
-                    <input
-                      type="number"
-                      step="any"
-                      required
-                      value={deliveryLongitude}
-                      onChange={(e) => setDeliveryLongitude(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-orange-500"
-                    />
-                  </div>
-                </div>
+                <p className="text-[11px] text-slate-600 mt-1">
+                  Phí giao hàng được tính theo số quận chênh lệch (cùng quận: 15.000 đ, mỗi quận chênh lệch: 15.000 đ).
+                </p>
               </div>
 
               <div>
@@ -376,8 +354,11 @@ export const Checkout = () => {
                 <span className="flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-orange-500" />
                   Phí giao hàng:
-                  {preview?.distanceKm && (
-                    <span className="text-[10px] text-slate-600">({preview.distanceKm} km)</span>
+                  {preview?.restaurantDistrictNo && preview?.deliveryDistrictNo && (
+                    <span className="text-[10px] text-slate-600">
+                      (Q{preview.restaurantDistrictNo} → Q{preview.deliveryDistrictNo}
+                      {preview.gap === 0 ? ' • cùng quận' : ` • cách ${preview.gap} quận`})
+                    </span>
                   )}
                 </span>
                 <span className="font-semibold text-slate-800">

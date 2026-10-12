@@ -6,28 +6,25 @@ let restaurants = [
     email: 'pho.hanoi@example.com',
     phoneNumber: '0901111111',
     address: '12 Hàng Buồm, Hoàn Kiếm, Hà Nội',
-    latitude: 21.0340,
-    longitude: 105.8490,
+    districtNo: 1,
     active: true,
   },
   {
     restaurantId: 2,
-    restaurantName: 'Bún Bò Huế Ngon',
-    email: 'bunbo.hue@example.com',
+    restaurantName: 'Bún Bò Ngon',
+    email: 'bunbo.ngon@example.com',
     phoneNumber: '0902222222',
-    address: '88 Lê Lợi, Hải Châu, Đà Nẵng',
-    latitude: 16.0678,
-    longitude: 108.2208,
+    address: '88 Lê Lợi, Quận 3',
+    districtNo: 3,
     active: true,
   },
   {
     restaurantId: 3,
-    restaurantName: 'Pizza Saigon',
-    email: 'pizza.saigon@example.com',
+    restaurantName: 'Pizza Ngon',
+    email: 'pizza.ngon@example.com',
     phoneNumber: '0903333333',
-    address: '45 Nguyễn Huệ, Quận 1, TP.HCM',
-    latitude: 10.7769,
-    longitude: 106.7009,
+    address: '45 Nguyễn Huệ, Quận 7',
+    districtNo: 7,
     active: true,
   },
 ];
@@ -94,13 +91,12 @@ let orders = [
     customerName: 'Nguyễn Văn An',
     restaurantId: 1,
     restaurantName: 'Phở Hà Nội',
-    distanceKm: 2.5,
-    shippingFee: 17500,
-    totalAmount: 127500,
+    restaurantDistrictNo: 1,
+    deliveryDistrictNo: 3,
+    shippingFee: 30000,
+    totalAmount: 140000,
     orderStatus: 'DELIVERING',
-    deliveryAddress: '5 Tràng Tiền, Hoàn Kiếm, Hà Nội',
-    deliveryLatitude: 21.0245,
-    deliveryLongitude: 105.8560,
+    deliveryAddress: '5 Tràng Tiền, Quận 3',
     notes: 'Giao nhanh giúp mình',
     createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
     items: [
@@ -111,7 +107,7 @@ let orders = [
       orderId: 100,
       methodCode: 'VIETQR',
       paymentStatus: 'PAID',
-      amount: 127500,
+      amount: 140000,
       transactionCode: 'TXN-00100',
     },
   },
@@ -149,33 +145,17 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
-// Haversine formula calculation
-function calcShipping(lat1, lon1, lat2, lon2) {
-  const R = 6371; // km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = Math.round(R * c * 10) / 10;
-
-  const baseFee = 15000;
-  const baseKm = 2.0;
-  const perKmFee = 5000;
-  const maxFee = 50000;
-
-  let fee = baseFee;
-  if (distance > baseKm) {
-    fee += Math.ceil(distance - baseKm) * perKmFee;
-  }
-  fee = Math.min(fee, maxFee);
-
-  return { distanceKm: distance, shippingFee: fee };
+// District-based shipping fee calculation
+function calcShipping(restaurantDistrictNo, deliveryDistrictNo) {
+  const gap = Math.abs(restaurantDistrictNo - deliveryDistrictNo);
+  const sameDistrictFee = 15000;
+  const perGapFee = 15000;
+  const shippingFee = gap === 0 ? sameDistrictFee : gap * perGapFee;
+  return { restaurantDistrictNo, deliveryDistrictNo, gap, shippingFee };
 }
+
+// Generate districts list
+const DISTRICT_LIST = Array.from({ length: 10 }, (_, i) => ({ districtNo: i + 1, districtName: `Quận ${i + 1}` }));
 
 export function mockApiPlugin() {
   return {
@@ -244,21 +224,21 @@ export function mockApiPlugin() {
         if (url === '/api/auth/restaurant/register' && req.method === 'POST') {
           const body = await parseBody(req);
           const newRestId = restaurants.length + 1;
+          const distNo = Number(body.districtNo) || 1;
           const newRest = {
             restaurantId: newRestId,
             restaurantName: body.restaurantName || 'Nhà hàng mới',
             email: body.email,
             phoneNumber: body.phoneNumber || '0901234567',
             address: body.address || 'Hà Nội',
-            latitude: Number(body.latitude) || 21.0285,
-            longitude: Number(body.longitude) || 105.8542,
+            districtNo: distNo,
             active: true,
           };
           restaurants.push(newRest);
-          // Thêm 2 món mẫu cho nhà hàng mới đăng ký để có thực đơn ngay
+          // Thêm 2 món mẫu cho nhà hàng mới đăng ký
           foodItems.push(
-            { itemId: foodItems.length + 1, restaurantId: newRestId, itemName: 'Món đặc sản 1', categoryName: 'Món chính', price: 60000, isAvailable: true, description: 'Món ăn đặc sắc của quán vừa đăng ký' },
-            { itemId: foodItems.length + 2, restaurantId: newRestId, itemName: 'Nước uống giải khát', categoryName: 'Đồ uống', price: 20000, isAvailable: true, description: 'Nước ngọt giải khát mát lạnh' }
+            { itemId: foodItems.length + 1, restaurantId: newRestId, itemName: 'Món đặc sản 1', categoryName: 'Món chính', price: 60000, isAvailable: true, description: 'Món ăn đặc sắc của quán' },
+            { itemId: foodItems.length + 2, restaurantId: newRestId, itemName: 'Nước uống giải khát', categoryName: 'Đồ uống', price: 20000, isAvailable: true, description: 'Nước ngọt giải khát' }
           );
           return sendJson(res, 201, {
             id: newRest.restaurantId,
@@ -290,9 +270,38 @@ export function mockApiPlugin() {
           });
         }
 
-        // 2. Restaurants
+        // 2. Districts
+        if (url === '/api/districts' && req.method === 'GET') {
+          return sendJson(res, 200, DISTRICT_LIST);
+        }
+
+        // 3. Restaurants
         if (url === '/api/restaurants' && req.method === 'GET') {
-          return sendJson(res, 200, restaurants);
+          const districtFilter = queryParams.get('district');
+          const page = parseInt(queryParams.get('page') || '0', 10);
+          const size = parseInt(queryParams.get('size') || '20', 10);
+
+          let filtered = restaurants.filter((r) => r.active);
+          if (districtFilter) {
+            filtered = filtered.filter((r) => r.districtNo === Number(districtFilter));
+          }
+          const total = filtered.length;
+          const slice = filtered.slice(page * size, (page + 1) * size);
+          return sendJson(res, 200, {
+            content: slice,
+            totalElements: total,
+            totalPages: Math.ceil(total / size) || 1,
+            number: page,
+            size,
+          });
+        }
+
+        const restDetailMatch = url.match(/^\/api\/restaurants\/(\d+)$/);
+        if (restDetailMatch && req.method === 'GET') {
+          const restId = Number(restDetailMatch[1]);
+          const found = restaurants.find((r) => r.restaurantId === restId);
+          if (found) return sendJson(res, 200, found);
+          return sendJson(res, 404, { message: 'Không tìm thấy nhà hàng' });
         }
 
         const restItemsMatch = url.match(/^\/api\/restaurants\/(\d+)\/items$/);
@@ -309,47 +318,45 @@ export function mockApiPlugin() {
           return sendJson(res, 200, restOrders);
         }
 
-        // 3. Payment methods
+        // 4. Payment methods
         if (url === '/api/payment-methods' && req.method === 'GET') {
           return sendJson(res, 200, paymentMethods);
         }
 
-        // 4. Order preview
+        // 5. Order preview
         if (url === '/api/orders/preview' && req.method === 'POST') {
           const body = await parseBody(req);
           const rest = restaurants.find((r) => r.restaurantId === body.restaurantId) || restaurants[0];
-          const { distanceKm, shippingFee } = calcShipping(
-            rest.latitude,
-            rest.longitude,
-            body.deliveryLatitude || 20.9806,
-            body.deliveryLongitude || 105.7876
+          const { restaurantDistrictNo, deliveryDistrictNo, gap, shippingFee } = calcShipping(
+            rest.districtNo || 1,
+            body.deliveryDistrictNo || 1
           );
 
-          let subtotal = 0;
+          let itemsTotal = 0;
           for (const it of body.items || []) {
             const fi = foodItems.find((f) => f.itemId === it.itemId);
-            if (fi) subtotal += fi.price * it.quantity;
+            if (fi) itemsTotal += fi.price * it.quantity;
           }
 
           return sendJson(res, 200, {
-            distanceKm,
+            restaurantDistrictNo,
+            deliveryDistrictNo,
+            gap,
             shippingFee,
-            subtotal,
-            totalAmount: subtotal + shippingFee,
+            itemsTotal,
+            totalAmount: itemsTotal + shippingFee,
           });
         }
 
-        // 5. Orders CRUD
+        // 6. Orders CRUD
         if (url === '/api/orders' && req.method === 'POST') {
           const body = await parseBody(req);
           const rest = restaurants.find((r) => r.restaurantId === body.restaurantId) || restaurants[0];
           const cust = customers.find((c) => c.customerId === body.customerId) || customers[0];
 
-          const { distanceKm, shippingFee } = calcShipping(
-            rest.latitude,
-            rest.longitude,
-            body.deliveryLatitude || 20.9806,
-            body.deliveryLongitude || 105.7876
+          const { restaurantDistrictNo, deliveryDistrictNo, gap, shippingFee } = calcShipping(
+            rest.districtNo || 1,
+            body.deliveryDistrictNo || 1
           );
 
           const detailedItems = (body.items || []).map((it) => {
@@ -362,20 +369,19 @@ export function mockApiPlugin() {
             };
           });
 
-          const subtotal = detailedItems.reduce((s, i) => s + i.price * i.quantity, 0);
+          const itemsTotal = detailedItems.reduce((s, i) => s + i.price * i.quantity, 0);
           const newOrder = {
             orderId: nextOrderId++,
             customerId: body.customerId,
             customerName: cust.fullName,
             restaurantId: body.restaurantId,
             restaurantName: rest.restaurantName,
-            distanceKm,
+            restaurantDistrictNo,
+            deliveryDistrictNo,
             shippingFee,
-            totalAmount: subtotal + shippingFee,
+            totalAmount: itemsTotal + shippingFee,
             orderStatus: 'PENDING',
             deliveryAddress: body.deliveryAddress,
-            deliveryLatitude: body.deliveryLatitude,
-            deliveryLongitude: body.deliveryLongitude,
             notes: body.notes || '',
             createdAt: new Date().toISOString(),
             items: detailedItems,
@@ -384,7 +390,7 @@ export function mockApiPlugin() {
               orderId: nextOrderId - 1,
               methodCode: 'COD',
               paymentStatus: 'PENDING',
-              amount: subtotal + shippingFee,
+              amount: itemsTotal + shippingFee,
               transactionCode: `TXN-${nextOrderId - 1}`,
             },
           };
@@ -445,14 +451,31 @@ export function mockApiPlugin() {
         }
 
         if (url === '/api/drivers/deliveries/available' && req.method === 'GET') {
-          // READY_FOR_PICKUP and not in deliveries
+          const districtFilter = queryParams.get('district');
+          const page = parseInt(queryParams.get('page') || '0', 10);
+          const size = parseInt(queryParams.get('size') || '6', 10);
+
           const activeDeliveryOrderIds = deliveries
             .filter((d) => d.deliveryStatus === 'ASSIGNED' || d.deliveryStatus === 'PICKED_UP')
             .map((d) => d.orderId);
-          const available = orders.filter(
+
+          let available = orders.filter(
             (o) => o.orderStatus === 'READY_FOR_PICKUP' && !activeDeliveryOrderIds.includes(o.orderId)
           );
-          return sendJson(res, 200, available);
+          if (districtFilter) {
+            const dn = Number(districtFilter);
+            available = available.filter((o) => o.restaurantDistrictNo === dn || o.deliveryDistrictNo === dn);
+          }
+
+          const total = available.length;
+          const slice = available.slice(page * size, (page + 1) * size);
+          return sendJson(res, 200, {
+            content: slice,
+            totalElements: total,
+            totalPages: Math.ceil(total / size) || 1,
+            number: page,
+            size,
+          });
         }
 
         const drvActiveMatch = url.match(/^\/api\/drivers\/(\d+)\/active-delivery$/);
