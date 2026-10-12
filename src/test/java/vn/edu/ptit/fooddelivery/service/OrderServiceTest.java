@@ -37,7 +37,7 @@ class OrderServiceTest {
 
     // ShippingProperties không inject được qua @InjectMocks vì là record
     private final ShippingProperties shipping =
-            new ShippingProperties(15_000, 5_000, 2.0, 50_000);
+            new ShippingProperties(10, java.math.BigDecimal.valueOf(15_000), java.math.BigDecimal.valueOf(15_000));
 
     private Customer    customer;
     private Restaurant  restaurant;

@@ -16,18 +16,16 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
 
 # ---------------------------------------------------------------------------
-# Tham số phí ship (mục 5.2)
-# base_fee   : phí cơ bản (VND) – áp dụng cho mọi đơn
-# per_km_fee : phí thêm mỗi km vượt base_km
-# base_km    : số km miễn phí đầu tiên (vd 2 km đầu tính base_fee)
-# max_fee    : phí ship tối đa (VND), tránh trường hợp quá xa
+# Tham số phí ship theo quận:
+# total-districts   : tổng số quận (1..10)
+# same-district-fee : phí cùng quận (gap = 0) (VND)
+# per-gap-fee       : phí mỗi đơn vị khoảng cách quận (gap >= 1: gap * per-gap-fee) (VND)
 # ---------------------------------------------------------------------------
 app:
   shipping:
-    base-fee: 15000
-    per-km-fee: 5000
-    base-km: 2.0
-    max-fee: 50000
+    total-districts: 10
+    same-district-fee: 15000
+    per-gap-fee: 15000
 
 server:
   port: 8080
