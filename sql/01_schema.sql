@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
     password_hash   VARCHAR(255)    NOT NULL,
     phone_number    VARCHAR(20)     NOT NULL,
     address         VARCHAR(255)    NOT NULL,
-    district_no     TINYINT         NOT NULL,
+    district_no     INT             NOT NULL,
     latitude        DOUBLE          NULL,
     longitude       DOUBLE          NULL,
     is_active       TINYINT(1)      NOT NULL DEFAULT 1,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS orders (
     total_amount        DECIMAL(12,2)   NOT NULL,
     order_status        VARCHAR(30)     NOT NULL DEFAULT 'PENDING',
     delivery_address    VARCHAR(255)    NOT NULL,
-    delivery_district_no TINYINT        NULL,
+    delivery_district_no INT            NULL,
     created_at          DATETIME(6)     NOT NULL,
     CONSTRAINT pk_orders PRIMARY KEY (order_id),
     CONSTRAINT chk_orders_status CHECK (order_status IN (

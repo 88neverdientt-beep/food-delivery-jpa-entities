@@ -15,13 +15,13 @@
 -- 1. Thêm cột district_no vào bảng restaurants (cho phép null tạm thời)
 --    Đồng thời chuyển latitude và longitude thành cho phép null.
 ALTER TABLE restaurants
-    ADD COLUMN district_no TINYINT NULL AFTER address,
+    ADD COLUMN district_no INT NULL AFTER address,
     MODIFY COLUMN latitude DOUBLE NULL,
     MODIFY COLUMN longitude DOUBLE NULL;
 
 -- 2. Thêm cột delivery_district_no vào bảng orders (cho phép null tạm thời)
 ALTER TABLE orders
-    ADD COLUMN delivery_district_no TINYINT NULL AFTER delivery_address;
+    ADD COLUMN delivery_district_no INT NULL AFTER delivery_address;
 
 
 -- -----------------------------------------------------------------------------
@@ -48,12 +48,12 @@ WHERE delivery_district_no IS NULL;
 -- 3. Áp đặt ràng buộc:
 -- - restaurants: Bắt buộc NOT NULL và BETWEEN 1 AND 10
 ALTER TABLE restaurants
-    MODIFY COLUMN district_no TINYINT NOT NULL,
+    MODIFY COLUMN district_no INT NOT NULL,
     ADD CONSTRAINT chk_restaurants_district CHECK (district_no BETWEEN 1 AND 10);
 
 -- - orders: Cho phép NULL cho đơn cũ; nếu có giá trị (đơn mới) thì phải BETWEEN 1 AND 10
 ALTER TABLE orders
-    MODIFY COLUMN delivery_district_no TINYINT NULL,
+    MODIFY COLUMN delivery_district_no INT NULL,
     ADD CONSTRAINT chk_orders_delivery_district CHECK (delivery_district_no IS NULL OR (delivery_district_no BETWEEN 1 AND 10));
 
 
