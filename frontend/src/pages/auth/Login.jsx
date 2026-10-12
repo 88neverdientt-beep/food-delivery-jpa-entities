@@ -24,7 +24,7 @@ export const Login = () => {
       setEmail('bunbo.hue@example.com');
       setPassword('pass123');
     } else if (newRole === 'DRIVER') {
-      setEmail('tuan.driver@example.com');
+      setEmail('hung.pham@example.com');
       setPassword('pass123');
     }
   };
