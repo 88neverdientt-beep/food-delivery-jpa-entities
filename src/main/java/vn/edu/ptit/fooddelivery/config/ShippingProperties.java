@@ -2,21 +2,17 @@ package vn.edu.ptit.fooddelivery.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.math.BigDecimal;
+
 /**
- * Tham số phí ship đọc từ application.yml (prefix: app.shipping).
- * <pre>
- *   shipping_fee = max(base_fee, base_fee + (distance_km - base_km) * per_km_fee)
- *   shipping_fee = min(shipping_fee, max_fee)
- * </pre>
+ * Tham số cấu hình giao hàng theo quận đọc từ application.yml (prefix: app.shipping).
  */
 @ConfigurationProperties(prefix = "app.shipping")
 public record ShippingProperties(
-        /** Phí cơ bản (VND). */
-        double baseFee,
-        /** Phí thêm mỗi km (VND). */
-        double perKmFee,
-        /** Số km đầu tính bằng base_fee. */
-        double baseKm,
-        /** Phí tối đa (VND). */
-        double maxFee
+        /** Tổng số quận trong thành phố (1..totalDistricts). */
+        int totalDistricts,
+        /** Phí ship khi cùng quận (gap = 0). */
+        BigDecimal sameDistrictFee,
+        /** Phí mỗi đơn vị chênh lệch quận (gap >= 1: gap * perGapFee). */
+        BigDecimal perGapFee
 ) {}

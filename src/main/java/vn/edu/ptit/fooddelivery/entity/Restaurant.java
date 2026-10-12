@@ -42,10 +42,14 @@ public class Restaurant {
     @Column(name = "address", nullable = false, length = 255)
     private String address;
 
-    @Column(name = "latitude", nullable = false)
+    @Column(name = "district_no", nullable = false)
+    @Builder.Default
+    private Integer districtNo = 1;
+
+    @Column(name = "latitude")
     private Double latitude;
 
-    @Column(name = "longitude", nullable = false)
+    @Column(name = "longitude")
     private Double longitude;
 
     @Column(name = "is_active", nullable = false)

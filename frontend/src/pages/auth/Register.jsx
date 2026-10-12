@@ -22,17 +22,33 @@ export const Register = () => {
     address: '',
     // Restaurant
     restaurantName: '',
-    latitude: 21.0340,
-    longitude: 105.8490,
+    districtNo: 1,
     // Driver
     licensePlate: '',
   });
 
+  const [districts, setDistricts] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const data = await axiosClient.get('/districts');
+        if (Array.isArray(data) && data.length > 0) {
+          setDistricts(data);
+        } else {
+          setDistricts(Array.from({ length: 10 }, (_, i) => ({ districtNo: i + 1, districtName: `Quận ${i + 1}` })));
+        }
+      } catch (err) {
+        setDistricts(Array.from({ length: 10 }, (_, i) => ({ districtNo: i + 1, districtName: `Quận ${i + 1}` })));
+      }
+    };
+    fetchDistricts();
+  }, []);
 
   const handleRoleChange = (newRole) => {
     setRole(newRole);
@@ -68,8 +84,7 @@ export const Register = () => {
         password: formData.password,
         phoneNumber: formData.phoneNumber,
         address: formData.address,
-        latitude: Number(formData.latitude),
-        longitude: Number(formData.longitude),
+        districtNo: Number(formData.districtNo),
       };
     } else if (role === 'DRIVER') {
       endpoint = '/auth/driver/register';
@@ -298,60 +313,31 @@ export const Register = () => {
             </div>
           )}
 
-          {/* Riêng cho Restaurant: Toạ độ GPS */}
+          {/* Riêng cho Restaurant: Chọn quận */}
           {role === 'RESTAURANT' && (
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Tọa độ GPS nhà hàng (để tính phí ship)
-                </label>
-                <div className="flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, latitude: 21.0340, longitude: 105.8490 })}
-                    className="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-100 hover:text-orange-700 font-semibold text-slate-600"
-                  >
-                    Hà Nội
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, latitude: 16.0678, longitude: 108.2208 })}
-                    className="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-100 hover:text-orange-700 font-semibold text-slate-600"
-                  >
-                    Đà Nẵng
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, latitude: 10.7769, longitude: 106.7009 })}
-                    className="text-[10px] px-2 py-0.5 rounded bg-slate-100 hover:bg-orange-100 hover:text-orange-700 font-semibold text-slate-600"
-                  >
-                    TP.HCM
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="number"
-                  step="any"
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Khu vực quận của nhà hàng *
+              </label>
+              <div className="relative">
+                <MapPin className="w-5 h-5 text-slate-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <select
                   required
-                  name="latitude"
-                  value={formData.latitude}
+                  name="districtNo"
+                  value={formData.districtNo}
                   onChange={handleChange}
-                  placeholder="Vĩ độ (Latitude)"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-orange-500"
-                />
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleChange}
-                  placeholder="Kinh độ (Longitude)"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-orange-500"
-                />
+                  className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white transition"
+                >
+                  {districts.map((d) => (
+                    <option key={d.districtNo} value={d.districtNo}>
+                      {d.districtName || `Quận ${d.districtNo}`}
+                    </option>
+                  ))}
+                </select>
               </div>
+              <p className="text-[11px] text-slate-600 mt-1">
+                Phí giao hàng được tính tự động dựa trên khoảng cách số quận giữa nhà hàng và khách.
+              </p>
             </div>
           )}
 

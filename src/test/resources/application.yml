@@ -18,7 +18,6 @@ spring:
 
 app:
   shipping:
-    base-fee: 15000
-    per-km-fee: 5000
-    base-km: 2.0
-    max-fee: 50000
+    total-districts: 10
+    same-district-fee: 15000
+    per-gap-fee: 15000

@@ -31,10 +31,16 @@ export const RestaurantMenu = () => {
   const fetchRestaurantAndMenu = async () => {
     try {
       setLoading(true);
-      // Lấy danh sách quán để lấy thông tin chi tiết
-      const restaurants = await axiosClient.get('/restaurants');
-      const found = restaurants.find((r) => r.restaurantId.toString() === id.toString());
-      setRestaurant(found || { restaurantId: id, restaurantName: `Nhà hàng #${id}`, address: '' });
+      // Lấy thông tin chi tiết nhà hàng
+      try {
+        const rest = await axiosClient.get(`/restaurants/${id}`);
+        setRestaurant(rest);
+      } catch (err) {
+        const data = await axiosClient.get('/restaurants');
+        const list = Array.isArray(data) ? data : (data?.content || []);
+        const found = list.find((r) => r.restaurantId.toString() === id.toString());
+        setRestaurant(found || { restaurantId: id, restaurantName: `Nhà hàng #${id}`, address: '' });
+      }
 
       // Lấy món còn bán của quán
       const menuItems = await axiosClient.get(`/restaurants/${id}/items`);

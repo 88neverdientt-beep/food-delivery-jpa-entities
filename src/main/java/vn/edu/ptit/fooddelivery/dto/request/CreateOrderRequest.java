@@ -22,11 +22,8 @@ public record CreateOrderRequest(
         @NotBlank(message = "deliveryAddress is required")
         String deliveryAddress,
 
-        @NotNull(message = "deliveryLatitude is required")
-        Double deliveryLatitude,
-
-        @NotNull(message = "deliveryLongitude is required")
-        Double deliveryLongitude,
+        @NotNull(message = "deliveryDistrictNo is required")
+        Integer deliveryDistrictNo,
 
         @NotEmpty(message = "Order must contain at least one item")
         List<@Valid OrderItemRequest> items

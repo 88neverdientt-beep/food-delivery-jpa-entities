@@ -6,6 +6,7 @@ public record RestaurantResponse(
         Long restaurantId,
         String restaurantName,
         String address,
+        Integer districtNo,
         String phoneNumber,
         Double latitude,
         Double longitude
@@ -15,6 +16,7 @@ public record RestaurantResponse(
                 r.getRestaurantId(),
                 r.getRestaurantName(),
                 r.getAddress(),
+                r.getDistrictNo(),
                 r.getPhoneNumber(),
                 r.getLatitude(),
                 r.getLongitude()

@@ -26,9 +26,10 @@ public record RegisterRestaurantRequest(
         @Size(max = 255)
         String address,
 
-        @NotNull(message = "Vĩ độ không được để trống")
+        @NotNull(message = "Quận không được để trống")
+        Integer districtNo,
+
         Double latitude,
 
-        @NotNull(message = "Kinh độ không được để trống")
         Double longitude
 ) {}

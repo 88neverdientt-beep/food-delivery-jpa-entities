@@ -32,6 +32,7 @@ public class AuthController {
     private final CustomerRepository   customerRepository;
     private final RestaurantRepository restaurantRepository;
     private final DriverRepository     driverRepository;
+    private final vn.edu.ptit.fooddelivery.util.ShippingFeeCalculator shippingFeeCalculator;
 
     // ─── Customer ─────────────────────────────────────────────────────────────
 
@@ -69,12 +70,14 @@ public class AuthController {
         if (restaurantRepository.findByEmail(req.email()).isPresent()) {
             throw new ConflictException("Email nhà hàng đã tồn tại: " + req.email());
         }
+        shippingFeeCalculator.validateDistrict(req.districtNo(), "Quận nhà hàng");
         Restaurant saved = restaurantRepository.save(Restaurant.builder()
                 .restaurantName(req.restaurantName())
                 .email(req.email())
                 .passwordHash(req.password())   // demo: plaintext
                 .phoneNumber(req.phoneNumber())
                 .address(req.address())
+                .districtNo(req.districtNo())
                 .latitude(req.latitude())
                 .longitude(req.longitude())
                 .active(true)

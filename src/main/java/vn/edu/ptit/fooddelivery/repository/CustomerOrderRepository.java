@@ -1,5 +1,7 @@
 package vn.edu.ptit.fooddelivery.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +38,27 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     default List<CustomerOrder> findAwaitingDriver() {
         return findAwaitingDriver(OrderStatus.READY_FOR_PICKUP);
     }
+
+    /**
+     * Lấy các đơn đang chờ tài xế nhận kèm phân trang và lọc theo quận (quận nhà hàng hoặc quận giao).
+     */
+    @Query(value = """
+            SELECT o FROM CustomerOrder o
+            LEFT JOIN o.delivery d
+            WHERE o.orderStatus = :status
+              AND (d IS NULL OR d.driver IS NULL)
+              AND (:district IS NULL OR o.restaurant.districtNo = :district OR o.deliveryDistrictNo = :district)
+            """,
+            countQuery = """
+            SELECT count(o) FROM CustomerOrder o
+            LEFT JOIN o.delivery d
+            WHERE o.orderStatus = :status
+              AND (d IS NULL OR d.driver IS NULL)
+              AND (:district IS NULL OR o.restaurant.districtNo = :district OR o.deliveryDistrictNo = :district)
+            """)
+    Page<CustomerOrder> findAwaitingDriver(
+            @Param("status") OrderStatus status,
+            @Param("district") Integer district,
+            Pageable pageable
+    );
 }

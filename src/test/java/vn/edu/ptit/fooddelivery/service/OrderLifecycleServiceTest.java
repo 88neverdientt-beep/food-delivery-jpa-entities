@@ -46,11 +46,10 @@ class OrderLifecycleServiceTest {
                 .customer(customer)
                 .restaurant(restaurant)
                 .orderStatus(OrderStatus.PENDING)
-                .distanceKm(3.0)
+                .deliveryDistrictNo(1)
                 .shippingFee(new BigDecimal("20000"))
                 .totalAmount(new BigDecimal("120000"))
                 .deliveryAddress("addr")
-                .deliveryLatitude(21.0).deliveryLongitude(105.8)
                 .build();
     }
 

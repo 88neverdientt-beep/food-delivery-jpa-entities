@@ -276,13 +276,11 @@ class RepositoryCustomQueryTest {
         return CustomerOrder.builder()
                 .customer(c)
                 .restaurant(restaurant)
-                .distanceKm(2.5)
+                .deliveryDistrictNo(1)
                 .shippingFee(new BigDecimal("15000"))
                 .totalAmount(new BigDecimal("70000"))
                 .orderStatus(status)
                 .deliveryAddress("Test Address")
-                .deliveryLatitude(21.01)
-                .deliveryLongitude(105.81)
                 .build();
     }
 }

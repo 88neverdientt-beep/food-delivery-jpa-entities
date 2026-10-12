@@ -12,13 +12,12 @@ public record OrderResponse(
         Long customerId,
         Long restaurantId,
         String restaurantName,
-        Double distanceKm,
+        Integer restaurantDistrictNo,
+        Integer deliveryDistrictNo,
         BigDecimal shippingFee,
         BigDecimal totalAmount,
         OrderStatus orderStatus,
         String deliveryAddress,
-        Double deliveryLatitude,
-        Double deliveryLongitude,
         LocalDateTime createdAt,
         List<OrderItemResponse> items
 ) {
@@ -32,13 +31,12 @@ public record OrderResponse(
                 o.getCustomer().getCustomerId(),
                 o.getRestaurant().getRestaurantId(),
                 o.getRestaurant().getRestaurantName(),
-                o.getDistanceKm(),
+                o.getRestaurant().getDistrictNo(),
+                o.getDeliveryDistrictNo(),
                 o.getShippingFee(),
                 o.getTotalAmount(),
                 o.getOrderStatus(),
                 o.getDeliveryAddress(),
-                o.getDeliveryLatitude(),
-                o.getDeliveryLongitude(),
                 o.getCreatedAt(),
                 itemResponses
         );
